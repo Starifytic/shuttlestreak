@@ -2,7 +2,7 @@
   "name": "ShuttleStreak",
   "short_name": "ShuttleStreak",
   "description": "Local-first badminton habit tracker — drills, matches, recovery. Works offline.",
-  "start_url": "/",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
