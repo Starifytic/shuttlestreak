@@ -6,41 +6,18 @@
     <meta name="theme-color" content="#10b981" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    
-    <!-- Updated Title for iOS -->
-    <meta name="apple-mobile-web-app-title" content="ShuttleStreak" />
+    <meta name="apple-mobile-web-app-title" content="Streak" />
     <meta name="description" content="ShuttleStreak — local-first badminton habit tracker. Drills, matches, recovery. Works offline." />
     <title>ShuttleStreak</title>
-    
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <!-- Apple Touch Icon for better iOS support -->
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="manifest" href="/manifest.json">
-    
-    <script type="module" crossorigin src="assets/index-BgXB_0TY.js"></script>
-    <link rel="stylesheet" crossorigin href="assets/index-BMprYukJ.css">
-    <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('SW registered!', reg))
-        .catch(err => console.log('SW failed!', err));
-    });
-  }
-</script>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link rel="manifest" href="manifest.json" />
+    <script type="module" crossorigin src="/assets/index-CgWkC_6c.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BMprYukJ.css">
   </head>
   <body>
     <div id="root"></div>
-
-    <!-- Service Worker Registration Script -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registered!'))
-            .catch(err => console.error('Service Worker registration failed:', err));
-        });
-      }
-    </script>
   </body>
 </html>
