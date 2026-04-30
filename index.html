@@ -144,6 +144,54 @@
             .catch(err => console.error('SW Registration Failed', err));
         });
       }
+// Create a small debug logger on screen
+const log = (msg, color = "white") => {
+  const div = document.createElement('div');
+  div.style = `color: ${color}; font-size: 10px; font-family: monospace; padding: 2px; border-bottom: 1px solid #333;`;
+  div.innerText = `> ${msg}`;
+  document.body.prepend(div);
+};
+
+let deferredPrompt;
+const installContainer = document.getElementById('pwa-install-container');
+const installBtn = document.getElementById('install-btn');
+
+log("Checking Service Worker...");
+
+// 1. Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => log("SW Registered ✅", "#10b981"))
+      .catch(err => log("SW Failed: " + err, "#ef4444"));
+  });
+} else {
+  log("SW not supported ❌", "#ef4444");
+}
+
+// 2. Listen for Install Prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  log("Install Event Fired! 🚀", "#10b981");
+  e.preventDefault();
+  deferredPrompt = e;
+  installContainer.style.display = 'flex';
+});
+
+// 3. Installation logic
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  log(`User choice: ${outcome}`);
+  deferredPrompt = null;
+  installContainer.style.display = 'none';
+});
+
+// 4. Check if already in "Standalone" mode
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  log("Running as Installed App 📱");
+}
+
     </script>
   </body>
 </html>
