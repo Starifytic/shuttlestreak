@@ -19,14 +19,13 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
     <link rel="manifest" href="manifest.json" />
 
-    <!-- Your Assets (Keep these paths exactly as they were in your build) -->
+    <!-- Your Assets -->
     <script type="module" crossorigin src="/assets/index-CgWkC_6c.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BMprYukJ.css">
 
     <style>
-      /* Main Install Banner Styling */
       #pwa-install-container {
-        display: none; /* Hidden by default */
+        display: none;
         position: fixed;
         bottom: 24px;
         left: 50%;
@@ -35,134 +34,98 @@
         color: white;
         padding: 12px 16px;
         border-radius: 12px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         z-index: 9999;
         width: 90%;
         max-width: 400px;
         align-items: center;
         justify-content: space-between;
         border: 1px solid #334155;
-        font-family: sans-serif;
-        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       @keyframes slideUp {
-        from { transform: translate(-50%, 100%); opacity: 0; }
+        from { transform: translate(-50%, 150%); opacity: 0; }
         to { transform: translate(-50%, 0); opacity: 1; }
       }
 
       #install-btn {
         background: #10b981;
-        color: #000;
+        color: #0f172a;
         border: none;
-        padding: 8px 16px;
+        padding: 8px 18px;
         border-radius: 8px;
         font-weight: 700;
         cursor: pointer;
         margin-right: 8px;
+        font-size: 0.85rem;
       }
 
       #close-install {
         background: transparent;
         color: #94a3b8;
         border: none;
-        font-size: 22px;
+        font-size: 24px;
         cursor: pointer;
-      }
-      
-      /* Debug Log Styling */
-      #debug-log {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: rgba(0,0,0,0.8);
-        z-index: 10000;
-        pointer-events: none;
+        line-height: 1;
       }
     </style>
   </head>
   <body>
-    <div id="debug-log"></div>
     <div id="root"></div>
 
-    <!-- UI Container -->
+    <!-- PWA Install Banner -->
     <div id="pwa-install-container">
-      <p style="margin:0; font-size: 0.9rem;">Install ShuttleStreak</p>
+      <p style="margin:0; font-size: 0.95rem; font-weight: 500;">Install ShuttleStreak to Home</p>
       <div style="display: flex; align-items: center;">
         <button id="install-btn">Install</button>
-        <button id="close-install">&times;</button>
+        <button id="close-install" aria-label="Close">&times;</button>
       </div>
     </div>
 
     <script>
-      // 1. Setup Debugger
-      const log = (msg, color = "white") => {
-        const debugBox = document.getElementById('debug-log');
-        const div = document.createElement('div');
-        div.style = `color: ${color}; font-size: 10px; font-family: monospace; padding: 4px; border-bottom: 1px solid #333;`;
-        div.innerText = `> ${msg}`;
-        debugBox.appendChild(div);
-        console.log(msg);
-      };
-
       const installContainer = document.getElementById('pwa-install-container');
       const installBtn = document.getElementById('install-btn');
       const closeBtn = document.getElementById('close-install');
       let deferredPrompt;
 
-      log("App Initialized...");
-
-      // 2. Service Worker Registration
+      // 1. Service Worker Registration
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => log("SW Registered ✅", "#10b981"))
-            .catch(err => log("SW Failed: " + err, "#ef4444"));
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
-      } else {
-        log("SW not supported ❌", "#ef4444");
       }
 
-      // 3. The PWA "Before Install" Logic
+      // 2. Capture the install event
       window.addEventListener('beforeinstallprompt', (e) => {
-        log("Install Event Fired! 🚀", "#10b981");
-        // Prevent Chrome's tiny default prompt
         e.preventDefault();
-        // Save the event
         deferredPrompt = e;
-        // Show our nice Green UI
+        // Show the button
         installContainer.style.display = 'flex';
       });
 
-      // 4. Install Button Interaction
+      // 3. Trigger installation
       installBtn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
-        
-        // Show the native prompt
         deferredPrompt.prompt();
-        
         const { outcome } = await deferredPrompt.userChoice;
-        log(`User Choice: ${outcome}`);
-        
+        if (outcome === 'accepted') {
+          installContainer.style.display = 'none';
+        }
         deferredPrompt = null;
-        installContainer.style.display = 'none';
       });
 
+      // 4. Manual Close
       closeBtn.addEventListener('click', () => {
         installContainer.style.display = 'none';
-        log("Banner dismissed by user");
       });
 
-      // 5. Detect if already installed
+      // 5. Hide if already installed
       window.addEventListener('appinstalled', () => {
-        log("Installation Complete! 🎉");
         installContainer.style.display = 'none';
+        deferredPrompt = null;
       });
-
-      if (window.matchMedia('(display-mode: standalone)').matches) {
-        log("Mode: Standalone (Installed) 📱");
-      }
     </script>
   </body>
 </html>
