@@ -5,131 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#10b981" />
     
+    <!-- PWA / Apple Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ShuttleStreak" />
     <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-
-    <meta name="description" content="ShuttleStreak — local-first badminton habit tracker. Drills, matches, recovery. Works offline." />
+    <meta name="description" content="ShuttleStreak — local-first badminton habit tracker." />
+    
     <title>ShuttleStreak</title>
     
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
     <link rel="manifest" href="manifest.json" />
 
-    <script type="module" crossorigin src="/assets/index-CgWkC_6c.js">    <script>
-      let deferredPrompt;
-      const installContainer = document.getElementById('pwa-install-container');
-      const installBtn = document.getElementById('install-btn');
-      const closeBtn = document.getElementById('close-install');
-
-      // 1. Listen for the browser signaling the app is installable
-      window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent the default mini-bar from appearing
-        e.preventDefault();
-        // Save the event for later
-        deferredPrompt = e;
-        // Show our custom UI
-        installContainer.style.display = 'flex';
-      });
-
-      // 2. Handle the click on the "Install" button
-      installBtn.addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        
-        // Show the native install prompt
-        deferredPrompt.prompt();
-        
-        // Wait for user choice
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`User choice: ${outcome}`);
-        
-        // Clean up
-        deferredPrompt = null;
-        installContainer.style.display = 'none';
-      });
-
-      // 3. Hide banner if user closes it
-      closeBtn.addEventListener('click', () => {
-        installContainer.style.display = 'none';
-      });
-
-      // 4. Hide banner if already installed
-      window.addEventListener('appinstalled', () => {
-        installContainer.style.display = 'none';
-        deferredPrompt = null;
-        console.log('ShuttleStreak was installed.');
-      });
-
-      // 5. Service Worker Registration
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('SW Registered'))
-            .catch(err => console.error('SW Registration Failed', err));
-        });
-      }
-// Create a small debug logger on screen
-const log = (msg, color = "white") => {
-  const div = document.createElement('div');
-  div.style = `color: ${color}; font-size: 10px; font-family: monospace; padding: 2px; border-bottom: 1px solid #333;`;
-  div.innerText = `> ${msg}`;
-  document.body.prepend(div);
-};
-
-let deferredPrompt;
-const installContainer = document.getElementById('pwa-install-container');
-const installBtn = document.getElementById('install-btn');
-
-log("Checking Service Worker...");
-
-// 1. Service Worker Registration
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => log("SW Registered ✅", "#10b981"))
-      .catch(err => log("SW Failed: " + err, "#ef4444"));
-  });
-} else {
-  log("SW not supported ❌", "#ef4444");
-}
-
-// 2. Listen for Install Prompt
-window.addEventListener('beforeinstallprompt', (e) => {
-  log("Install Event Fired! 🚀", "#10b981");
-  e.preventDefault();
-  deferredPrompt = e;
-  installContainer.style.display = 'flex';
-});
-
-// 3. Installation logic
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  log(`User choice: ${outcome}`);
-  deferredPrompt = null;
-  installContainer.style.display = 'none';
-});
-
-// 4. Check if already in "Standalone" mode
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  log("Running as Installed App 📱");
-}
-
-    </script>
+    <!-- Your Assets (Keep these paths exactly as they were in your build) -->
+    <script type="module" crossorigin src="/assets/index-CgWkC_6c.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BMprYukJ.css">
 
     <style>
-      /* Installation Prompt Styling */
+      /* Main Install Banner Styling */
       #pwa-install-container {
-        display: none;
+        display: none; /* Hidden by default */
         position: fixed;
         bottom: 24px;
         left: 50%;
         transform: translateX(-50%);
-        background: #1e293b; /* Dark slate background */
+        background: #1e293b;
         color: white;
         padding: 12px 16px;
         border-radius: 12px;
@@ -140,6 +42,7 @@ if (window.matchMedia('(display-mode: standalone)').matches) {
         align-items: center;
         justify-content: space-between;
         border: 1px solid #334155;
+        font-family: sans-serif;
         animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
@@ -148,52 +51,118 @@ if (window.matchMedia('(display-mode: standalone)').matches) {
         to { transform: translate(-50%, 0); opacity: 1; }
       }
 
-      #pwa-install-container p {
-        margin: 0;
-        font-size: 0.9rem;
-        font-family: sans-serif;
-        font-weight: 500;
-      }
-
       #install-btn {
-        background: #10b981; /* ShuttleStreak Green */
+        background: #10b981;
         color: #000;
         border: none;
         padding: 8px 16px;
         border-radius: 8px;
         font-weight: 700;
         cursor: pointer;
-        font-size: 0.85rem;
-        transition: transform 0.1s;
-      }
-
-      #install-btn:active {
-        transform: scale(0.95);
+        margin-right: 8px;
       }
 
       #close-install {
         background: transparent;
         color: #94a3b8;
         border: none;
-        font-size: 20px;
+        font-size: 22px;
         cursor: pointer;
-        padding: 0 4px 0 12px;
+      }
+      
+      /* Debug Log Styling */
+      #debug-log {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 10000;
+        pointer-events: none;
       }
     </style>
   </head>
   <body>
+    <div id="debug-log"></div>
     <div id="root"></div>
 
+    <!-- UI Container -->
     <div id="pwa-install-container">
-      <p>Add ShuttleStreak to Home Screen</p>
+      <p style="margin:0; font-size: 0.9rem;">Install ShuttleStreak</p>
       <div style="display: flex; align-items: center;">
         <button id="install-btn">Install</button>
-        <button id="close-install" aria-label="Dismiss">&times;</button>
+        <button id="close-install">&times;</button>
       </div>
     </div>
-    <div id="pwa-install-container" style="display:none; padding: 20px; background: #1a1a1a; border-top: 1px solid #10b981; position: fixed; bottom: 0; width: 100%; z-index: 999; justify-content: space-between; align-items: center;">
-  <span style="color: white;">Install ShuttleStreak for the best experience</span>
-  <button id="install-btn" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold;">Install Now</button>
-</div>
+
+    <script>
+      // 1. Setup Debugger
+      const log = (msg, color = "white") => {
+        const debugBox = document.getElementById('debug-log');
+        const div = document.createElement('div');
+        div.style = `color: ${color}; font-size: 10px; font-family: monospace; padding: 4px; border-bottom: 1px solid #333;`;
+        div.innerText = `> ${msg}`;
+        debugBox.appendChild(div);
+        console.log(msg);
+      };
+
+      const installContainer = document.getElementById('pwa-install-container');
+      const installBtn = document.getElementById('install-btn');
+      const closeBtn = document.getElementById('close-install');
+      let deferredPrompt;
+
+      log("App Initialized...");
+
+      // 2. Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => log("SW Registered ✅", "#10b981"))
+            .catch(err => log("SW Failed: " + err, "#ef4444"));
+        });
+      } else {
+        log("SW not supported ❌", "#ef4444");
+      }
+
+      // 3. The PWA "Before Install" Logic
+      window.addEventListener('beforeinstallprompt', (e) => {
+        log("Install Event Fired! 🚀", "#10b981");
+        // Prevent Chrome's tiny default prompt
+        e.preventDefault();
+        // Save the event
+        deferredPrompt = e;
+        // Show our nice Green UI
+        installContainer.style.display = 'flex';
+      });
+
+      // 4. Install Button Interaction
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        // Show the native prompt
+        deferredPrompt.prompt();
+        
+        const { outcome } = await deferredPrompt.userChoice;
+        log(`User Choice: ${outcome}`);
+        
+        deferredPrompt = null;
+        installContainer.style.display = 'none';
+      });
+
+      closeBtn.addEventListener('click', () => {
+        installContainer.style.display = 'none';
+        log("Banner dismissed by user");
+      });
+
+      // 5. Detect if already installed
+      window.addEventListener('appinstalled', () => {
+        log("Installation Complete! 🎉");
+        installContainer.style.display = 'none';
+      });
+
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        log("Mode: Standalone (Installed) 📱");
+      }
+    </script>
   </body>
 </html>
