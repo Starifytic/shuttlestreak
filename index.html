@@ -4,20 +4,146 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#10b981" />
+    
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Streak" />
-    <meta name="description" content="ShuttleStreak — local-first badminton habit tracker. Drills, matches, recovery. Works offline." />
-    <title>ShuttleStreak</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+    <meta name="apple-mobile-web-app-title" content="ShuttleStreak" />
     <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+
+    <meta name="description" content="ShuttleStreak — local-first badminton habit tracker. Drills, matches, recovery. Works offline." />
+    <title>ShuttleStreak</title>
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
     <link rel="manifest" href="manifest.json" />
+
     <script type="module" crossorigin src="/assets/index-CgWkC_6c.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BMprYukJ.css">
+
+    <style>
+      /* Installation Prompt Styling */
+      #pwa-install-container {
+        display: none;
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e293b; /* Dark slate background */
+        color: white;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        width: 90%;
+        max-width: 400px;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #334155;
+        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes slideUp {
+        from { transform: translate(-50%, 100%); opacity: 0; }
+        to { transform: translate(-50%, 0); opacity: 1; }
+      }
+
+      #pwa-install-container p {
+        margin: 0;
+        font-size: 0.9rem;
+        font-family: sans-serif;
+        font-weight: 500;
+      }
+
+      #install-btn {
+        background: #10b981; /* ShuttleStreak Green */
+        color: #000;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: transform 0.1s;
+      }
+
+      #install-btn:active {
+        transform: scale(0.95);
+      }
+
+      #close-install {
+        background: transparent;
+        color: #94a3b8;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 4px 0 12px;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+
+    <div id="pwa-install-container">
+      <p>Add ShuttleStreak to Home Screen</p>
+      <div style="display: flex; align-items: center;">
+        <button id="install-btn">Install</button>
+        <button id="close-install" aria-label="Dismiss">&times;</button>
+      </div>
+    </div>
+
+    <script>
+      let deferredPrompt;
+      const installContainer = document.getElementById('pwa-install-container');
+      const installBtn = document.getElementById('install-btn');
+      const closeBtn = document.getElementById('close-install');
+
+      // 1. Listen for the browser signaling the app is installable
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the default mini-bar from appearing
+        e.preventDefault();
+        // Save the event for later
+        deferredPrompt = e;
+        // Show our custom UI
+        installContainer.style.display = 'flex';
+      });
+
+      // 2. Handle the click on the "Install" button
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        // Show the native install prompt
+        deferredPrompt.prompt();
+        
+        // Wait for user choice
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User choice: ${outcome}`);
+        
+        // Clean up
+        deferredPrompt = null;
+        installContainer.style.display = 'none';
+      });
+
+      // 3. Hide banner if user closes it
+      closeBtn.addEventListener('click', () => {
+        installContainer.style.display = 'none';
+      });
+
+      // 4. Hide banner if already installed
+      window.addEventListener('appinstalled', () => {
+        installContainer.style.display = 'none';
+        deferredPrompt = null;
+        console.log('ShuttleStreak was installed.');
+      });
+
+      // 5. Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW Registered'))
+            .catch(err => console.error('SW Registration Failed', err));
+        });
+      }
+    </script>
   </body>
 </html>
