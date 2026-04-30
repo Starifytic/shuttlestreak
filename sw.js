@@ -1,20 +1,20 @@
 // ShuttleStreak service worker — offline-first cache for the static SPA.
-// Cache-first for app shell + same-origin assets, network fallback otherwise.
-
-const CACHE_VERSION = "ss-v1";
+const CACHE_VERSION = "ss-v2"; // Incremented version to force update
 const PRECACHE_URLS = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./favicon.svg",
+  "/",
+  "/index.html",
+  "/manifest.json",
+  "/favicon.svg",
+  "/icon-192.png",
+  "/icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_VERSION)
-      .then((cache) => cache.addAll(PRECACHE_URLS).catch(() => {}))
-      .then(() => self.skipWaiting()),
+      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -23,9 +23,11 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k))),
+        Promise.all(
+          keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k))
+        )
       )
-      .then(() => self.clients.claim()),
+      .then(() => self.clients.claim())
   );
 });
 
@@ -36,34 +38,31 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // Network-first for navigation requests so users always get the latest HTML when online,
-  // but fall back to cached shell when offline.
+  // Network-first for navigation (HTML)
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE_VERSION).then((c) => c.put(req, copy)).catch(() => {});
+          caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
           return res;
         })
-        .catch(() => caches.match(req).then((m) => m || caches.match("./index.html"))),
+        .catch(() => caches.match("/"))
     );
     return;
   }
 
-  // Cache-first for everything else (JS, CSS, images, fonts).
+  // Cache-first for assets (JS, CSS, PNG, SVG)
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
-      return fetch(req)
-        .then((res) => {
-          if (res && res.status === 200 && res.type === "basic") {
-            const copy = res.clone();
-            caches.open(CACHE_VERSION).then((c) => c.put(req, copy)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => cached);
-    }),
+      return fetch(req).then((res) => {
+        if (res && res.status === 200 && res.type === "basic") {
+          const copy = res.clone();
+          caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
+        }
+        return res;
+      });
+    })
   );
 });
